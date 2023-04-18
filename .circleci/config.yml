@@ -17,15 +17,3 @@ jobs:
           root: ~/project
           paths:
             - .
-
-
-workflows:
-  test_my_app:
-    jobs:
-      - test
-      - deploy:
-          requires:
-            - test 
-          filters:
-            branches:
-              only: main 
