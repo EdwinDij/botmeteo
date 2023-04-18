@@ -2,37 +2,40 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.2
   heroku: circleci/heroku@1.2.6
+
 jobs:
-  build_and_test: # this can be any name you choose
-    executor: node/default # use the default executor defined within the orb
+  build_and_test:
+    executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
       - run:
-          command: npm run test
+          command: npm test
           name: Run tests
       - run:
-          command: npm run build
+          command: npm build
           name: Build app
       - persist_to_workspace:
           root: ~/project
           paths:
             - .
-      deploy: # this can be any name you choose
+
+  deploy:
     executor: heroku/default
     steps:
       - attach_workspace:
           at: ~/project
       - heroku/deploy-via-git:
           force: true 
+
 workflows:
-  build_test_deploy: # this can be any name you choose
+  test_my_app:
     jobs:
       - build_and_test
       - deploy:
           requires:
-            - build_and_test # only deploy if the build_and_test job has completed
+            - build_and_test 
           filters:
             branches:
-              only: main # only deploy when on main
+              only: main 
