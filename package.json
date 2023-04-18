@@ -10,8 +10,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@discordjs/core": "^0.5.2",
     "@types/node": "^18.15.11",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
   }
 }

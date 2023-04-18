@@ -1,1 +1,1 @@
-console.log('Hello World');
+const { Client, Events, GatewayIntents } = require('discord.js');
