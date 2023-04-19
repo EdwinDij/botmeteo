@@ -13,10 +13,7 @@ describe('Client', () => {
   it('shoudl log in and emit ready evant', async () => {
     const readyPromise = new Promise((resolve) => {
       client.once('ready', () => {
-        const channel = client.channels.cache.find(channel => channel.name === 'meteo')
-	      if (channel) {
-		        channel.send('Bonjour ! Je vous dirais la météo ! ')
-	      }       
+   
         resolve();
       });
     });

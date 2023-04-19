@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, GuildChannelManager } = require('discord.js');
+const { channel } = require('node:diagnostics_channel');
 require ('dotenv').config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -26,6 +27,7 @@ for (const folder of commandFolders) {
 client.once(Events.ClientReady, () => {
 	console.log('Ready!');
 });
+
 
 client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isChatInputCommand()) return;
