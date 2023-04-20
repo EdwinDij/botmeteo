@@ -1,4 +1,4 @@
-const { describe, expect, test } = require('@jest/globals');
+  const { describe, expect, test } = require('@jest/globals');
 const { Client, GatewayIntentBits  } = require('discord.js');
 require('dotenv').config();
 

@@ -1,42 +1,69 @@
 const { SlashCommandBuilder } = require("discord.js");
 require('dotenv').config();
 const axios = require('axios');
-const { execute } = require('../commands/Api/callApi');
+const command = require('../commands/Api/callApi');
 
-jest.mock('axios');
-
-describe('Test unitaire pour la commande "meteo"', () => {
-  const mockInteraction = {
-    options: {
-      getString: jest.fn().mockReturnValue('Paris'),
-    },
-    reply: jest.fn(),
-  };
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test('doit retourner la météo de la ville demandée', async () => {
+describe('Meteo command', () => {
+  test('should return the correct weather data', async () => {
+    const cityName = 'Paris';
     const mockResponse = {
       data: {
-        name: 'Paris',
-        main: { temp: 20 },
+        name: cityName,
+        main: {
+          temp: 15,
+          feels_like: 13,
+          temp_min: 12,
+          temp_max: 17,
+        },
+        weather: [
+          {
+            description: 'light rain',
+            icon: '10d',
+          },
+        ],
       },
     };
-
-    axios.get.mockResolvedValue(mockResponse);
-
-    await execute(mockInteraction);
-
-    expect(mockInteraction.options.getString).toHaveBeenCalledWith('ville');
-    expect(axios.get).toHaveBeenCalledWith(`http://api.openweathermap.org/data/2.5/weather?q=Paris&appid=${process.env.API_KEY}&units=metric&lang=fr`);
+    jest.spyOn(axios, 'get').mockResolvedValue(mockResponse);
+    const mockInteraction = {
+      options: {
+        getString: jest.fn().mockReturnValue(cityName),
+      },
+      reply: jest.fn(),
+    };
+    await command.execute(mockInteraction);
     expect(mockInteraction.reply).toHaveBeenCalledWith({
-      embeds: [{
-        color: 0x9900FF,
-        title: 'Météo de Paris',
-        description: 'Il fait actuellement 20°C à Paris.',
-      }],
+      embeds: [
+        {
+          color: 0x9900FF,
+          title: `Météo de ${cityName}`,
+          description: `Il fait actuellement 15°C à ${cityName}.`,
+          fields: [
+            {
+              name: "Température ressentie",
+              value: "13°C",
+              inline: true,
+            },
+            {
+              name: "Température minimale",
+              value: "12°C",
+              inline: true,
+            },
+            {
+              name: "Température maximale",
+              value: "17°C",
+              inline: true,
+            },
+            {
+              name: "temps",
+              value: "light rain",
+              inline: true,
+            },
+          ],
+          image: {
+            url: `http://openweathermap.org/img/wn/10d.png`,
+          },
+        },
+      ],
     });
   });
 });
