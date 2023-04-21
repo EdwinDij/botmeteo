@@ -50,68 +50,71 @@ client.on(Events.InteractionCreate, async interaction => {
 
 client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isButton()) return;
+
 	const message = await interaction.channel.messages.fetch(interaction.message.id);
-	const date = new Date();
-	const hour = date.getHours();
-	const url = `https://api.openweathermap.org/data/2.5/weather?q=${message.content}&appid=${process.env.API_KEY}&units=metric&lang=fr`;
-	const response = await axios.get(url);
-	const data = response.data;
-	const embed = {
-		color: 0x9900FF,
-		title: `Météo de ${data.name}`,
-		description: `Il fait actuellement ${data.main.temp}°C à ${data.name}.`,
-		fields: [
-			{
-				name: "Température ressentie",
-				value: `${data.main.feels_like}°C`,
-				inline: true
-			},
-			{
-				name: "Température minimale",
-				value: `${data.main.temp_min}°C`,
-				inline: true
-			},
-			{
-				name: "Température maximale",
-				value: `${data.main.temp_max}°C`,
-				inline: true
-			}
-		],
-};
-	if (interaction.customId === '8H') {
-		url
-		setInterval(()=> {
-			if (hour === 8) {
+	const cityName = message.content;
+	const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${process.env.API_KEY}&units=metric&lang=fr`;
+
+	const schedules = {
+		'8H': { text: 'Météo de 8h', hour: 8 },
+		'12H': { text: 'Météo de 12h', hour: 12 },
+		'16H': { text: 'Météo de 16h', hour: 16 },
+		'20H': { text: 'Météo de 20h', hour: 20 },
+	};
+
+	const schedule = schedules[interaction.customId];
+
+	if (schedule) {
+		const intervalId = setInterval(async () => {
+			const date = new Date();
+			const hour = date.getHours();
+
+			if (hour === schedule.hour) {
+				const response = await axios.get(url);
+				const data = response.data;
+				const embed = {
+					color: 0x9900FF,
+					title: `Météo de ${data.name}`,
+					description: `Il fait actuellement ${data.main.temp}°C à ${data.name}.`,
+					fields: [
+						{
+							name: "Température ressentie",
+							value: `${data.main.feels_like}°C`,
+							inline: true
+						},
+						{
+							name: "Température minimale",
+							value: `${data.main.temp_min}°C`,
+							inline: true
+						},
+						{
+							name: "Température maximale",
+							value: `${data.main.temp_max}°C`,
+							inline: true
+						}
+					],
+				};
+
+				console.log(`[INFO] Sending ${schedule.text} at ${hour}h`);
 				interaction.channel.send({ embeds: [embed] });
+			} else {
+				console.log(`[INFO] Skipping ${schedule.text} at ${hour}h`);
 			}
-		}, 1000 * 60 * 60)
-		await interaction.reply({ content: 'Météo de 8h', ephemeral: true });
-	} else if (interaction.customId === '12H') {
-		setInterval(() => {
-			if (hour === 12) {
-			interaction.channel.send({ embeds: [embed] });
-		}
-		})
-		await interaction.reply({ content: 'Météo de 12h', ephemeral: true });
-	} else 
-	if (interaction.customId === '16H') {
-		setInterval(() => {
-		
-		if (hour === 16) {
-			interaction.channel.send({ embeds: [embed] });
-		}
-		});
-		await interaction.reply({ content: 'Météo de 16h', ephemeral: true });
-	} else if (interaction.customId === '20H'){ 
-		setInterval(()=> {
-			if (hour === 20) {
-				interaction.channel.send({ embeds: [embed] });
-			}
-		})
-		await interaction.reply({ content: 'Météo de 20h', ephemeral: true });
-	} else{
+		}, 1000 * 60 * 30);
+
+		await interaction.reply({ content: `Météo de ${cityName.charAt(0).toUpperCase() + cityName.slice(1) } programmée à ${schedule.hour}h`, ephemeral: true });
+
+		const intervalMap = interaction.client.intervalMap || new Map();
+		const guildId = interaction.guildId || interaction.channelId;
+		const intervalIds = intervalMap.get(guildId) || new Map();
+		intervalIds.set(schedule.hour, intervalId);
+		intervalMap.set(guildId, intervalIds);
+
+
+	} else {
 		return;
 	}
+
 });
 
 client.login(process.env.TOKEN);
